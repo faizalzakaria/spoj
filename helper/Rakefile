@@ -1,0 +1,31 @@
+require 'rubygems'
+require 'bundler/setup'
+require 'rake'
+require 'rake/clean'
+require 'open-uri'
+require 'nokogiri'
+
+$SPOJ_URL = "http://www.spoj.pl/ranks"
+
+def parseSpoj(spoj)
+  url = "#{$SPOJ_URL}/#{spoj}"
+  begin
+	doc = Nokogiri::HTML(open(url))
+	begin
+	  users = doc.css('tr[class=lightrow]').css('td')[0].content
+	  score = 80 / (users.to_f + 40.0)
+	  puts "Score for the problem #{spoj} : #{score.round(2)}"
+	rescue
+	  puts "Unknown problem code #{spoj}"
+	end
+  rescue
+	puts "Failed to go to #{url}"
+  end
+end
+
+task :get, :spoj do |t, args|
+  puts "Code : #{args.spoj}"
+  parseSpoj(args.spoj)
+end
+
+task :default, [ :spoj ] => [ :get ]
